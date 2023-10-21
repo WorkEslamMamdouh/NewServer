@@ -574,18 +574,19 @@ namespace WindowsFormsApp1
                     Send_Url();
                 }
 
-                SetTimeoutAsync(2500, () =>
-                {
-                    CheckProssSystem();
-
-                });
+       
             }
             else
             {
-                // Handle the error here
-                Console.WriteLine("Error: " + response.Response.ToString());
+                Send_Url();
+
             }
 
+            SetTimeoutAsync(2500, () =>
+            {
+                CheckProssSystem();
+
+            });
 
 
         }
@@ -936,45 +937,57 @@ namespace WindowsFormsApp1
         public BaseResponse CallAPI(string action, string Name_txt, string jsonData)
         {
 
-            string controller = decodedText(config.Master_Key);
-            string APIUrl = decodedText(config.Url_Api);
-
-            string CallUrl = APIUrl + controller + "/" + action;
-
-            List<string> parameters = new List<string>();
-            parameters.Add("Name_txt=" + Name_txt);
-
-            if (jsonData != null)
+            try
             {
-                parameters.Add("jsonData=" + jsonData);
+
+
+
+                string controller = decodedText(config.Master_Key);
+                string APIUrl = decodedText(config.Url_Api);
+
+                string CallUrl = APIUrl + controller + "/" + action;
+
+                List<string> parameters = new List<string>();
+                parameters.Add("Name_txt=" + Name_txt);
+
+                if (jsonData != null)
+                {
+                    parameters.Add("jsonData=" + jsonData);
+                }
+
+
+                CallUrl = CallUrl + GetDataparameters(parameters);
+
+
+                using (HttpClient client = new HttpClient())
+                {
+                    try
+                    {
+                        string json = client.GetStringAsync(CallUrl).Result;
+                        BaseResponse response = JsonConvert.DeserializeObject<BaseResponse>(json);
+                        return response;
+                    }
+                    catch
+                    {
+                        BaseResponse _res = new BaseResponse();
+                        return _res;
+                    }
+                }
+
+                BaseResponse res = new BaseResponse();
+                return res;
             }
-
-
-            CallUrl = CallUrl + GetDataparameters(parameters);
-
-
-            using (HttpClient client = new HttpClient())
+            catch  
             {
-                try
-                {
-                    string json = client.GetStringAsync(CallUrl).Result;
-                    BaseResponse response = JsonConvert.DeserializeObject<BaseResponse>(json);
-                    return response;
-                }
-                catch
-                {
-                    BaseResponse _res = new BaseResponse();
-                    return _res;
-                }
-            }
 
-            BaseResponse res = new BaseResponse();
-            return res;
+                BaseResponse res = new BaseResponse();
+                return res;
+            }
         }
 
         public string GetDataparameters(List<string> parameters)
         {
-            string param = "MapPath=" + config.API_Icontrol;
+            string param = "MapPath=" + decodedText(config.API_Icontrol);
             parameters.Add(param);
 
             StringBuilder models = new StringBuilder();
@@ -1042,14 +1055,7 @@ namespace WindowsFormsApp1
 
 
             }
-            else
-            {
-                // Handle the error here
-                Console.WriteLine("Error: " + response.Response.ToString());
-            }
-
-
-
+         
         }
 
 
